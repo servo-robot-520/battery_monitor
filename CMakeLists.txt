@@ -133,6 +133,9 @@ if (BUILD_EXE)
             PATTERN "__pycache__" EXCLUDE
             PATTERN "*.pyc" EXCLUDE
     )
+    install(FILES README.md README.zh-CN.md
+            DESTINATION share/${PROJECT_NAME}
+    )
 endif ()
 
 install(DIRECTORY include/
