@@ -9,7 +9,8 @@
 
 ## 特性
 
-- 1 Hz 发布 `/battery_state`，映射 `BatteryState` 的全部字段。
+- 1 Hz 发布私有话题 `~/battery_state`，映射 `BatteryState` 的全部字段。根命名
+  空间下为 `/battery_monitor/battery_state`。
 - `Bms` 抽象 + 工厂，按 `bms.chip` 选择具体芯片；新增芯片不影响节点。
 - BQ28Z610：整包电压/电流/温度/容量/SOC、状态/健康、单体电压与电池包序列号。
 - 单体温度可选。BQ28Z610 不测量单体温度，数组保持为空；其他 BMS 驱动可以填充。
@@ -104,12 +105,29 @@ ros2 run battery_monitor battery_monitor_node --ros-args \
   --params-file "$(ros2 pkg prefix battery_monitor)/share/battery_monitor/config/battery_monitor.yaml"
 ```
 
+两个 launch 参数都是可选的。bringup 包可以传入命名空间和外部参数文件，也可以
+只传其中一个或都不传：
+
+```bash
+ros2 launch battery_monitor battery_monitor.launch.py \
+  namespace:=robot1 \
+  config:=/path/to/battery_monitor.yaml
+```
+
+不传参数时节点使用根命名空间和包内的 `config/battery_monitor.yaml`。从其他
+launch 文件 include 本文件时，同样转发 `namespace` 与 `config` 参数。
+
+包内 YAML 使用 `/**` 通配符，因此对任意命名空间生效。外部参数文件若按全限定
+节点名（`/robot1/battery_monitor`）编写，需要与实际 namespace 一致。
+
 检查发布结果：
 
 ```bash
-ros2 topic echo /battery_state --once
-ros2 topic hz /battery_state
+ros2 topic echo /battery_monitor/battery_state --once
+ros2 topic hz /battery_monitor/battery_state
 ```
+
+传入 `namespace:=robot1` 后话题为 `/robot1/battery_monitor/battery_state`。
 
 ## 参数
 
@@ -131,7 +149,9 @@ ros2 topic hz /battery_state
 
 ## 发布消息
 
-话题：`battery_state`（相对节点命名空间，默认 `/battery_state`）。类型：
+话题：`~/battery_state`（节点私有话题）。根命名空间下为
+`/battery_monitor/battery_state`；传入 `namespace:=robot1` 后为
+`/robot1/battery_monitor/battery_state`。类型：
 `sensor_msgs/msg/BatteryState`。
 
 | 字段 | BQ28Z610 来源 | 说明 |

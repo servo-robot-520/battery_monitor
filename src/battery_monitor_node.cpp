@@ -94,14 +94,14 @@ namespace battery_monitor {
         bms_name_ = bms_->name();
 
         publisher_ = node_->create_publisher<sensor_msgs::msg::BatteryState>(
-            "battery_state", rclcpp::QoS(10));
+            "~/battery_state", rclcpp::QoS(10));
         timer_ = node_->create_wall_timer(std::chrono::duration<double>(1.0 / publish_rate_hz),
                                           [this] {
                                               poll();
                                           });
 
         const std::string source = bms_name_ == "fake" ? "simulated" : i2c_device;
-        LOG_INFO("Battery monitor ready: chip={} source={} rate={} Hz topic='battery_state'",
+        LOG_INFO("Battery monitor ready: chip={} source={} rate={} Hz topic='~/battery_state'",
                  bms_name_, source, publish_rate_hz);
     }
 

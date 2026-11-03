@@ -10,7 +10,9 @@ A deterministic fake BMS is available when no battery is connected.
 
 ## Features
 
-- Publishes `/battery_state` at 1 Hz and maps every `BatteryState` field.
+- Publishes the private `~/battery_state` topic at 1 Hz and maps every
+  `BatteryState` field. In the root namespace it is
+  `/battery_monitor/battery_state`.
 - `Bms` abstraction plus a factory selected by `bms.chip`; a new gauge only
   needs a new driver implementation.
 - BQ28Z610: pack voltage/current/temperature/capacity/SOC, status/health,
@@ -113,12 +115,32 @@ ros2 run battery_monitor battery_monitor_node --ros-args \
   --params-file "$(ros2 pkg prefix battery_monitor)/share/battery_monitor/config/battery_monitor.yaml"
 ```
 
+Both launch arguments are optional. A bringup package can pass a namespace and
+an external parameter file, or omit either one:
+
+```bash
+ros2 launch battery_monitor battery_monitor.launch.py \
+  namespace:=robot1 \
+  config:=/path/to/battery_monitor.yaml
+```
+
+With no arguments the node uses the root namespace and the package's
+`config/battery_monitor.yaml`. When including this launch file from another
+launch file, forward the same `namespace` and `config` arguments.
+
+The packaged YAML files use the `/**` wildcard, so they apply under any
+namespace. An external parameter file keyed by a fully qualified node name
+(`/robot1/battery_monitor`) must match the actual namespace.
+
 Verify the output:
 
 ```bash
-ros2 topic echo /battery_state --once
-ros2 topic hz /battery_state
+ros2 topic echo /battery_monitor/battery_state --once
+ros2 topic hz /battery_monitor/battery_state
 ```
+
+With `namespace:=robot1` the topic becomes
+`/robot1/battery_monitor/battery_state`.
 
 ## Parameters
 
@@ -140,8 +162,10 @@ composing node must not already use the same names with incompatible types.
 
 ## Published message
 
-Topic: `battery_state` (relative to the node namespace, `/battery_state` by
-default). Type: `sensor_msgs/msg/BatteryState`.
+Topic: `~/battery_state` (private to the node). In the root namespace that is
+`/battery_monitor/battery_state`; with `namespace:=robot1` it becomes
+`/robot1/battery_monitor/battery_state`. Type:
+`sensor_msgs/msg/BatteryState`.
 
 | Field | Source on BQ28Z610 | Notes |
 |---|---|---|

@@ -1,4 +1,4 @@
-battery_monitor:
+/**:
   ros__parameters:
     bms:
       chip: fake

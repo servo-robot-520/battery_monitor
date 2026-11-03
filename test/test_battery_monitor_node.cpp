@@ -41,7 +41,7 @@ namespace battery_monitor {
             int count = 0;
             const auto subscription =
                 node->create_subscription<sensor_msgs::msg::BatteryState>(
-                    "battery_state", 10,
+                    "~/battery_state", 10,
                     [&received, &count](const sensor_msgs::msg::BatteryState::ConstSharedPtr message) {
                         received = *message;
                         ++count;
