@@ -1,14 +1,13 @@
 #pragma once
 
-#include <cstdint>
 #include <expected>
 #include <memory>
 #include <string>
 #include <string_view>
 #include <vector>
 
-#include "battery_monitor/bms.hpp"
-#include "battery_monitor/i2c_transport.hpp"
+#include "bms.hpp"
+#include "i2c_transport.hpp"
 
 namespace battery_monitor {
 
@@ -18,6 +17,9 @@ namespace battery_monitor {
     /// Table 14-1。注意该芯片并不使用 SBS 标准地址（例如电压是 0x08 而不是
     /// 0x09，SOC 是 0x2C 而不是 0x0D）；docs/BQ28Z610-寄存器手册.md 中列出的
     /// 是通用 SBS 地址，不能直接用于该芯片。
+    ///
+    /// 该芯片只提供整包温度，不提供单体温度，因此 BatteryReading 的
+    /// cell_temperature 保持为空。
     class Bq28z610 final : public Bms {
     public:
         explicit Bq28z610(std::unique_ptr<I2cTransport> transport);
@@ -45,12 +47,12 @@ namespace battery_monitor {
         static constexpr uint16_t kFlagOvertemperatureAlarm = 1U << 12;
         static constexpr uint16_t kFlagOverchargedAlarm = 1U << 15;
 
-        std::expected<uint16_t, BmsError> read_required_word(uint8_t command,
+        [[nodiscard]] std::expected<uint16_t, BmsError> read_required_word(uint8_t command,
                                                              std::string_view field) const;
 
         /// 读取一次 MAC 响应。BQ28Z610 要求从 0x3E 起连续读取 36 字节，
         /// 响应首两字节是子命令回显，末两字节是校验和与长度。
-        std::expected<std::vector<uint8_t>, BmsError> read_mac(uint16_t subcommand) const;
+        [[nodiscard]] std::expected<std::vector<uint8_t>, BmsError> read_mac(uint16_t subcommand) const;
 
         /// 从 DAStatus1 补齐单体电压；失败只影响单体电压，不影响整包数据。
         void fill_cell_voltages(BatteryReading& reading) const;

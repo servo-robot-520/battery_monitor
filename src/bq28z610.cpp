@@ -111,6 +111,7 @@ namespace battery_monitor {
         }
 
         fill_cell_voltages(reading);
+        // BQ28Z610 不提供单体温度，cell_temperature 保持为空；节点按原样映射。
         return reading;
     }
 
@@ -128,8 +129,7 @@ namespace battery_monitor {
 
     std::expected<std::vector<uint8_t>, BmsError> Bq28z610::read_mac(
         const uint16_t subcommand) const {
-        const auto written = transport_->write_word(kCommandManufacturerAccess, subcommand);
-        if (!written) {
+        if (const auto written = transport_->write_word(kCommandManufacturerAccess, subcommand); !written) {
             return std::unexpected(BmsError{
                 std::format("BQ28Z610: failed to issue MAC 0x{:04X}: {}", subcommand,
                             written.error().message)
@@ -181,8 +181,7 @@ namespace battery_monitor {
         for (std::size_t index = 0; index < checksummed_length; ++index) {
             sum = static_cast<uint8_t>(sum + bytes[index]);
         }
-        const uint8_t checksum = bytes[kMacBlockLength - 2];
-        if (static_cast<uint8_t>(~sum) != checksum) {
+        if (const uint8_t checksum = bytes[kMacBlockLength - 2]; static_cast<uint8_t>(~sum) != checksum) {
             return std::unexpected(BmsError{
                 std::format("BQ28Z610: MAC 0x{:04X} checksum mismatch (expected 0x{:02X}, got "
                             "0x{:02X})",

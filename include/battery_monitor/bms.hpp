@@ -55,6 +55,8 @@ namespace battery_monitor {
         double percentage{0.0};
         double temperature{0.0};
         std::vector<double> cell_voltage;
+        /// 单体温度；具体 BMS 不提供时留空，由节点原样映射到消息。
+        std::vector<double> cell_temperature;
         std::string location;
         std::string serial_number;
         PowerSupplyStatus status{PowerSupplyStatus::UNKNOWN};

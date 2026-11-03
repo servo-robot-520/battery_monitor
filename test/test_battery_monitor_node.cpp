@@ -69,7 +69,8 @@ namespace battery_monitor {
             EXPECT_EQ(sensor_msgs::msg::BatteryState::POWER_SUPPLY_TECHNOLOGY_LION,
                       received.power_supply_technology);
             ASSERT_EQ(2U, received.cell_voltage.size());
-            EXPECT_TRUE(received.cell_temperature.empty());
+            ASSERT_EQ(2U, received.cell_temperature.size());
+            EXPECT_FLOAT_EQ(24.5F, received.cell_temperature[0]);
             EXPECT_EQ("fake_pack", received.location);
             EXPECT_FALSE(received.header.stamp.sec == 0 && received.header.stamp.nanosec == 0);
         }

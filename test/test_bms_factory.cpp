@@ -19,6 +19,7 @@ namespace battery_monitor {
             ASSERT_TRUE(reading.has_value());
             EXPECT_TRUE(reading->present);
             EXPECT_TRUE(reading->cell_voltage.size() == 2);
+            EXPECT_TRUE(reading->cell_temperature.size() == 2);
         }
 
         TEST(BmsFactoryTest, RejectsUnknownChip) {

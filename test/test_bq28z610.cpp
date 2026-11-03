@@ -57,6 +57,7 @@ namespace battery_monitor {
             ASSERT_EQ(2U, reading->cell_voltage.size());
             EXPECT_DOUBLE_EQ(3.9, reading->cell_voltage[0]);
             EXPECT_DOUBLE_EQ(3.85, reading->cell_voltage[1]);
+            EXPECT_TRUE(reading->cell_temperature.empty());
         }
 
         TEST_F(Bq28z610Test, FullyChargedAndOvertemperatureFlagsWin) {
