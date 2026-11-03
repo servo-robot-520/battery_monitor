@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <expected>
 #include <memory>
 #include <string>
@@ -12,10 +11,8 @@ namespace battery_monitor {
     struct BmsConfig {
         /// 芯片标识：bq28z610 或 fake。
         std::string chip{"bq28z610"};
-        /// i2c-dev 设备路径，例如 /dev/i2c-5。
+        /// i2c-dev 设备路径，例如 /dev/i2c-5；从机地址由具体驱动硬编码。
         std::string i2c_device{"/dev/i2c-5"};
-        /// 7 位从机地址，BQ28Z610 默认 0x55。
-        uint8_t i2c_address{0x55};
     };
 
     /// 根据配置创建具体 BMS 驱动。

@@ -14,10 +14,6 @@
 namespace battery_monitor {
     namespace {
 
-        /// 7 位地址中 0x00-0x02 与 0x78-0x7F 为保留地址。
-        constexpr uint8_t kMinI2cAddress = 0x03;
-        constexpr uint8_t kMaxI2cAddress = 0x77;
-
         std::string normalize_chip(std::string chip) {
             const auto first = chip.find_first_not_of(" \t\r\n");
             if (first == std::string::npos) {
@@ -44,16 +40,9 @@ namespace battery_monitor {
             if (config.i2c_device.empty()) {
                 return std::unexpected(BmsError{"bms.i2c_device must not be empty"});
             }
-            if (config.i2c_address < kMinI2cAddress || config.i2c_address > kMaxI2cAddress) {
-                return std::unexpected(BmsError{
-                    std::format("bms.i2c_address 0x{:02X} is not a usable 7-bit address "
-                                "(expected 0x{:02X}..0x{:02X})",
-                                config.i2c_address, kMinI2cAddress, kMaxI2cAddress)
-                });
-            }
 
-            auto transport =
-                std::make_unique<LinuxI2cTransport>(config.i2c_device, config.i2c_address);
+            auto transport = std::make_unique<LinuxI2cTransport>(
+                config.i2c_device, Bq28z610::kI2cAddress);
             if (const auto opened = transport->open(); !opened) {
                 return std::unexpected(BmsError{opened.error().message});
             }

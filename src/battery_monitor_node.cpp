@@ -71,17 +71,11 @@ namespace battery_monitor {
             get_or_declare_parameter<std::string>(node_, "bms.chip", "bq28z610");
         const auto i2c_device =
             get_or_declare_parameter<std::string>(node_, "bms.i2c_device", "/dev/i2c-5");
-        const auto i2c_address =
-            get_or_declare_parameter<int64_t>(node_, "bms.i2c_address", 0x55);
         const auto publish_rate_hz =
             get_or_declare_parameter<double>(node_, "publish_rate_hz", 1.0);
         frame_id_ = get_or_declare_parameter<std::string>(node_, "frame_id", "");
         location_ = get_or_declare_parameter<std::string>(node_, "location", "battery");
 
-        if (i2c_address < 0 || i2c_address > 0x7F) {
-            throw std::runtime_error(
-                std::format("bms.i2c_address must be a 7-bit value (0..127), got {}", i2c_address));
-        }
         if (!std::isfinite(publish_rate_hz) || publish_rate_hz <= 0.0 ||
             publish_rate_hz > 1000.0) {
             throw std::runtime_error(
@@ -91,7 +85,6 @@ namespace battery_monitor {
         BmsConfig config;
         config.chip = chip;
         config.i2c_device = i2c_device;
-        config.i2c_address = static_cast<uint8_t>(i2c_address);
 
         auto created = create_bms(config);
         if (!created) {
@@ -107,10 +100,7 @@ namespace battery_monitor {
                                               poll();
                                           });
 
-        const std::string source = bms_name_ == "fake"
-            ? "simulated"
-            : std::format("{} address=0x{:02X}", i2c_device,
-                          static_cast<unsigned int>(config.i2c_address));
+        const std::string source = bms_name_ == "fake" ? "simulated" : i2c_device;
         LOG_INFO("Battery monitor ready: chip={} source={} rate={} Hz topic='battery_state'",
                  bms_name_, source, publish_rate_hz);
     }

@@ -4,8 +4,8 @@
 
 面向 TI **BQ28Z610** 电量计的 ROS 2 电池监控节点，以 1 Hz 发布
 `sensor_msgs/msg/BatteryState`。I2C 传输、BMS 芯片与 ROS 节点分层，节点不依赖
-具体芯片。默认硬件配置使用 `/dev/i2c-5`、7 位地址 `0x55`；未连接电池时可切换到
-确定性的 fake BMS。
+具体芯片。BQ28Z610 驱动硬编码 7 位地址 `0x55`，默认总线为 `/dev/i2c-5`；
+未连接电池时可切换到确定性的 fake BMS。
 
 ## 特性
 
@@ -53,13 +53,13 @@ battery_monitor/
 
 ## 硬件与连接
 
-BQ28Z610 的 7 位 I2C 地址为 `0x55`，开发板上电池总线对应 `/dev/i2c-5`。
+BQ28Z610 的 7 位 I2C 地址固定为 `0x55`，由驱动硬编码；开发板上电池总线对应
+`/dev/i2c-5`。
 
 ```yaml
 bms:
   chip: bq28z610
   i2c_device: /dev/i2c-5
-  i2c_address: 85
 ```
 
 当前开发板的设备权限为 `crw-rw---- root i2c`，`cat` 用户不在 `i2c` 组。运行前
@@ -147,8 +147,7 @@ ros2 topic hz /battery_state
 | 参数 | 类型 | 默认值 | 说明 |
 |---|---|---|---|
 | `bms.chip` | string | `bq28z610` | 驱动名称：`bq28z610` 或 `fake` |
-| `bms.i2c_device` | string | `/dev/i2c-5` | i2c-dev 设备路径 |
-| `bms.i2c_address` | int | `85`（`0x55`） | 7 位地址，`0x03`..`0x77` |
+| `bms.i2c_device` | string | `/dev/i2c-5` | i2c-dev 设备路径；从机地址由具体驱动硬编码 |
 | `publish_rate_hz` | double | `1.0` | 发布频率，`(0, 1000]` |
 | `frame_id` | string | `""` | `BatteryState.header.frame_id`；无 TF 坐标系时为空 |
 | `location` | string | `battery` | `BatteryState.location` |
@@ -210,8 +209,9 @@ MAC 响应从 `0x3E` 起一次读取 36 字节：前两字节是子命令回显�
 ## 扩展新芯片
 
 1. 新建驱动类实现 `Bms::read()`；I2C 访问保持在 `I2cTransport` 之后，便于用
-   假从机测试。
-2. 在 `src/bms_factory.cpp` 的 `create_bms()` 中加入芯片名称和构造分支。
+   假从机测试。把芯片固定的 7 位 I2C 地址暴露为公开常量。
+2. 在 `src/bms_factory.cpp` 的 `create_bms()` 中加入芯片名称和构造分支，并把
+   该地址传给 `LinuxI2cTransport`。
 3. 添加配置 YAML 与单元测试；节点和消息转换层无需修改。
 
 ## 使用 fake BMS 测试

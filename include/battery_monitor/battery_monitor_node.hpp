@@ -21,9 +21,9 @@ namespace battery_monitor {
     /// auto monitor = std::make_shared<battery_monitor::BatteryMonitorNode>(node);
     /// @endcode
     ///
-    /// 所有参数（bms.chip / bms.i2c_device / bms.i2c_address / publish_rate_hz /
-    /// frame_id / location）都声明在传入的节点上。构造失败（设备打不开、参数非法）
-    /// 会抛出 std::runtime_error。
+    /// 所有参数（bms.chip / bms.i2c_device / publish_rate_hz / frame_id /
+    /// location）都声明在传入的节点上。构造失败（设备打不开、参数非法）会抛出
+    /// std::runtime_error。
     class BatteryMonitorNode {
     public:
         explicit BatteryMonitorNode(rclcpp::Node::SharedPtr node);

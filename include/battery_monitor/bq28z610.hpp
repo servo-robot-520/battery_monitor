@@ -22,6 +22,9 @@ namespace battery_monitor {
     /// cell_temperature 保持为空；序列号通过 MAC 0x004E 读取。
     class Bq28z610 final : public Bms {
     public:
+        /// BQ28Z610 固定的 7 位 I2C 地址，由数据手册规定，不通过参数配置。
+        static constexpr uint8_t kI2cAddress = 0x55;
+
         explicit Bq28z610(std::unique_ptr<I2cTransport> transport);
 
         [[nodiscard]] std::string name() const override;

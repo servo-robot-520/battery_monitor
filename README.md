@@ -4,9 +4,9 @@
 
 ROS 2 battery monitor for the TI **BQ28Z610** fuel gauge. It publishes
 `sensor_msgs/msg/BatteryState` at 1 Hz. The I2C transport, BMS chip and ROS node
-are separated, so the node does not depend on a specific gauge. The default
-hardware configuration uses `/dev/i2c-5` with 7-bit address `0x55`; a
-deterministic fake BMS is available when no battery is connected.
+are separated, so the node does not depend on a specific gauge. The BQ28Z610
+driver hardcodes its 7-bit address `0x55`; the default bus is `/dev/i2c-5`.
+A deterministic fake BMS is available when no battery is connected.
 
 ## Features
 
@@ -59,14 +59,13 @@ battery_monitor/
 
 ## Hardware and connection
 
-BQ28Z610 uses a 7-bit I2C address of `0x55`; the development board exposes the
-battery bus as `/dev/i2c-5`.
+BQ28Z610 uses a fixed 7-bit I2C address of `0x55`, hardcoded in the driver; the
+development board exposes the battery bus as `/dev/i2c-5`.
 
 ```yaml
 bms:
   chip: bq28z610
   i2c_device: /dev/i2c-5
-  i2c_address: 85
 ```
 
 The observed board permission is `crw-rw---- root i2c`, and the `cat` user is
@@ -157,8 +156,7 @@ ros2 topic hz /battery_state
 | Parameter | Type | Default | Description |
 |---|---|---|---|
 | `bms.chip` | string | `bq28z610` | Driver name: `bq28z610` or `fake` |
-| `bms.i2c_device` | string | `/dev/i2c-5` | i2c-dev path |
-| `bms.i2c_address` | int | `85` (`0x55`) | 7-bit address, `0x03`..`0x77` |
+| `bms.i2c_device` | string | `/dev/i2c-5` | i2c-dev path; the slave address is fixed per driver |
 | `publish_rate_hz` | double | `1.0` | Publish rate, `(0, 1000]` |
 | `frame_id` | string | `""` | `BatteryState.header.frame_id`; empty when no TF frame exists |
 | `location` | string | `battery` | `BatteryState.location` |
@@ -222,9 +220,10 @@ voltages come from DAStatus1 (`0x0071`); the serial number comes from `0x004E`.
 ## Adding another BMS chip
 
 1. Implement `BatteryReading Bms::read()` in a new driver class; keep I2C
-   access behind `I2cTransport` so it can be tested with a fake slave.
+   access behind `I2cTransport` so it can be tested with a fake slave. Expose
+   the chip's fixed 7-bit I2C address as a public constant.
 2. Add the chip name and constructor branch to `create_bms()` in
-   `src/bms_factory.cpp`.
+   `src/bms_factory.cpp`, passing that address to `LinuxI2cTransport`.
 3. Add a config YAML and unit tests; the node and message conversion stay
    unchanged.
 

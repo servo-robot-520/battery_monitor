@@ -45,18 +45,6 @@ namespace battery_monitor {
             EXPECT_NE(std::string::npos, bms.error().message.find("bms.i2c_device"));
         }
 
-        TEST(BmsFactoryTest, RejectsReservedI2cAddressBeforeOpeningDevice) {
-            BmsConfig config;
-            config.i2c_device = "/dev/i2c-does-not-exist";
-            config.i2c_address = 0x02;
-
-            const auto bms = create_bms(config);
-
-            ASSERT_FALSE(bms.has_value());
-            EXPECT_NE(std::string::npos, bms.error().message.find("0x02"));
-            EXPECT_NE(std::string::npos, bms.error().message.find("7-bit"));
-        }
-
         TEST(BmsFactoryTest, ReportsMissingI2cDevice) {
             BmsConfig config;
             config.i2c_device = "/dev/i2c-battery-monitor-missing";
