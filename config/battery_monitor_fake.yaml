@@ -1,0 +1,10 @@
+battery_monitor:
+  ros__parameters:
+    bms:
+      chip: fake
+    publish_rate_hz: 1.0
+    location: "simulated_battery"
+    log:
+      log_level: info
+      log_path: ./log
+      async: false

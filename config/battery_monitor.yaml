@@ -1,0 +1,13 @@
+battery_monitor:
+  ros__parameters:
+    bms:
+      chip: bq28z610
+      i2c_device: /dev/i2c-5
+      i2c_address: 85
+    publish_rate_hz: 1.0
+    frame_id: ""
+    location: "battery"
+    log:
+      log_level: info
+      log_path: ./log
+      async: false
