@@ -26,37 +26,6 @@ A deterministic fake BMS is available when no battery is connected.
 - Read failures are rate-limited in the log and skipped instead of publishing
   stale values.
 
-## Package layout
-
-```text
-battery_monitor/
-├─ include/battery_monitor/
-│  ├─ bms.hpp                     # BatteryReading, Bms interface, enums
-│  ├─ bms_factory.hpp             # chip + I2C configuration
-│  ├─ bq28z610.hpp                # TI BQ28Z610 driver
-│  ├─ fake_bms.hpp                # deterministic simulator
-│  ├─ i2c_transport.hpp           # SMBus/raw I2C abstraction + Linux backend
-│  └─ battery_monitor_node.hpp    # composable ROS node
-├─ src/
-│  ├─ bms_factory.cpp
-│  ├─ bq28z610.cpp
-│  ├─ fake_bms.cpp
-│  ├─ i2c_transport.cpp
-│  ├─ battery_monitor_node.cpp
-│  └─ main.cpp
-├─ config/
-│  ├─ battery_monitor.yaml        # BQ28Z610 on /dev/i2c-5
-│  └─ battery_monitor_fake.yaml   # fake BMS for laptops/CI
-├─ launch/battery_monitor.launch.py
-├─ test/
-│  ├─ fake_i2c_transport.hpp
-│  ├─ test_bq28z610.cpp
-│  ├─ test_bms_factory.cpp
-│  └─ test_battery_monitor_node.cpp
-├─ CMakeLists.txt
-└─ package.xml
-```
-
 ## Hardware and connection
 
 BQ28Z610 uses a fixed 7-bit I2C address of `0x55`, hardcoded in the driver; the

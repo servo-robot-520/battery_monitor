@@ -20,37 +20,6 @@
   顶层 CLion 聚合构建。
 - 读取失败限频记录并跳过发布，避免把陈旧数据当成实时状态。
 
-## 包结构
-
-```text
-battery_monitor/
-├─ include/battery_monitor/
-│  ├─ bms.hpp                     # BatteryReading、Bms 接口与枚举
-│  ├─ bms_factory.hpp             # 芯片与 I2C 配置
-│  ├─ bq28z610.hpp                # TI BQ28Z610 驱动
-│  ├─ fake_bms.hpp                # 确定性模拟器
-│  ├─ i2c_transport.hpp           # SMBus/原始 I2C 抽象 + Linux 实现
-│  └─ battery_monitor_node.hpp    # 组合式 ROS 节点
-├─ src/
-│  ├─ bms_factory.cpp
-│  ├─ bq28z610.cpp
-│  ├─ fake_bms.cpp
-│  ├─ i2c_transport.cpp
-│  ├─ battery_monitor_node.cpp
-│  └─ main.cpp
-├─ config/
-│  ├─ battery_monitor.yaml        # /dev/i2c-5 上的 BQ28Z610
-│  └─ battery_monitor_fake.yaml   # 笔记本/CI 使用的 fake BMS
-├─ launch/battery_monitor.launch.py
-├─ test/
-│  ├─ fake_i2c_transport.hpp
-│  ├─ test_bq28z610.cpp
-│  ├─ test_bms_factory.cpp
-│  └─ test_battery_monitor_node.cpp
-├─ CMakeLists.txt
-└─ package.xml
-```
-
 ## 硬件与连接
 
 BQ28Z610 的 7 位 I2C 地址固定为 `0x55`，由驱动硬编码；开发板上电池总线对应
