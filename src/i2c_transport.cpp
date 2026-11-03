@@ -7,10 +7,10 @@
 #include <utility>
 
 #include <fcntl.h>
+#include <unistd.h>
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
 #include <sys/ioctl.h>
-#include <unistd.h>
 
 namespace battery_monitor {
     namespace {
@@ -21,9 +21,9 @@ namespace battery_monitor {
 
         /// 新版内核 UAPI 不再提供 i2c_smbus_* 内联封装，直接走 I2C_SMBUS ioctl。
         std::expected<void, I2cError> smbus_transfer(const int fd, const std::string& device,
-                                                      const uint8_t address, const uint8_t command,
-                                                      const char read_write, const uint8_t size,
-                                                      i2c_smbus_data* data) {
+                                                     const uint8_t address, const uint8_t command,
+                                                     const char read_write, const uint8_t size,
+                                                     i2c_smbus_data* data) {
             i2c_smbus_ioctl_data transfer = {};
             transfer.read_write = read_write;
             transfer.command = command;
@@ -34,9 +34,9 @@ namespace battery_monitor {
             if (::ioctl(fd, I2C_SMBUS, &transfer) < 0) {
                 const int error = errno;
                 return std::unexpected(I2cError{
-                    error,
-                    std::format("SMBus command 0x{:02X} on 0x{:02X} at {} failed: {}", command,
-                                address, device, describe_errno(error))
+                    .code = error,
+                    .message = std::format("SMBus command 0x{:02X} on 0x{:02X} at {} failed: {}", command,
+                                           address, device, describe_errno(error))
                 });
             }
             return {};
@@ -44,8 +44,9 @@ namespace battery_monitor {
 
     } // namespace
 
-    LinuxI2cTransport::LinuxI2cTransport(std::string device, const uint8_t address)
-        : device_(std::move(device)), address_(address) {}
+    LinuxI2cTransport::LinuxI2cTransport(std::string device, const uint8_t address) :
+        device_(std::move(device)), address_(address) {
+    }
 
     LinuxI2cTransport::~LinuxI2cTransport() {
         if (fd_ >= 0) {
@@ -62,7 +63,8 @@ namespace battery_monitor {
         if (fd < 0) {
             const int error = errno;
             return std::unexpected(I2cError{
-                error, std::format("cannot open {}: {}", device_, describe_errno(error))
+                .code = error,
+                .message = std::format("cannot open {}: {}", device_, describe_errno(error))
             });
         }
 
@@ -70,9 +72,9 @@ namespace battery_monitor {
             const int error = errno;
             ::close(fd);
             return std::unexpected(I2cError{
-                error,
-                std::format("cannot select 0x{:02X} on {}: {}", address_, device_,
-                            describe_errno(error))
+                .code = error,
+                .message = std::format("cannot select 0x{:02X} on {}: {}", address_, device_,
+                                       describe_errno(error))
             });
         }
 
@@ -82,16 +84,16 @@ namespace battery_monitor {
 
     std::expected<uint16_t, I2cError> LinuxI2cTransport::read_word(const uint8_t command) {
         if (fd_ < 0) {
-            return std::unexpected(I2cError{EBADF, std::format("{} is not open", device_)});
+            return std::unexpected(I2cError{.code = EBADF, .message = std::format("{} is not open", device_)});
         }
 
         i2c_smbus_data data = {};
         if (const auto result = smbus_transfer(fd_, device_, address_, command, I2C_SMBUS_READ,
-                                                I2C_SMBUS_WORD_DATA, &data);
+                                               I2C_SMBUS_WORD_DATA, &data);
             !result) {
             return std::unexpected(I2cError{
-                result.error().code,
-                std::format("read word failed: {}", result.error().message)
+                .code = result.error().code,
+                .message = std::format("read word failed: {}", result.error().message)
             });
         }
 
@@ -101,17 +103,17 @@ namespace battery_monitor {
     std::expected<void, I2cError> LinuxI2cTransport::write_word(const uint8_t command,
                                                                 const uint16_t value) {
         if (fd_ < 0) {
-            return std::unexpected(I2cError{EBADF, std::format("{} is not open", device_)});
+            return std::unexpected(I2cError{.code = EBADF, .message = std::format("{} is not open", device_)});
         }
 
         i2c_smbus_data data = {};
         data.word = value;
         if (const auto result = smbus_transfer(fd_, device_, address_, command, I2C_SMBUS_WRITE,
-                                                I2C_SMBUS_WORD_DATA, &data);
+                                               I2C_SMBUS_WORD_DATA, &data);
             !result) {
             return std::unexpected(I2cError{
-                result.error().code,
-                std::format("write word failed: {}", result.error().message)
+                .code = result.error().code,
+                .message = std::format("write word failed: {}", result.error().message)
             });
         }
 
@@ -121,11 +123,11 @@ namespace battery_monitor {
     std::expected<std::vector<uint8_t>, I2cError> LinuxI2cTransport::read_bytes(
         const uint8_t command, const std::size_t length) {
         if (fd_ < 0) {
-            return std::unexpected(I2cError{EBADF, std::format("{} is not open", device_)});
+            return std::unexpected(I2cError{.code = EBADF, .message = std::format("{} is not open", device_)});
         }
         if (length == 0 || length > std::numeric_limits<uint16_t>::max()) {
             return std::unexpected(I2cError{
-                EINVAL, std::format("invalid I2C read length {}", length)
+                .code = EINVAL, .message = std::format("invalid I2C read length {}", length)
             });
         }
 
@@ -150,9 +152,9 @@ namespace battery_monitor {
         if (::ioctl(fd_, I2C_RDWR, &transfer) < 0) {
             const int error = errno;
             return std::unexpected(I2cError{
-                error,
-                std::format("read {} bytes from 0x{:02X} on 0x{:02X} at {} failed: {}", length,
-                            command, address_, device_, describe_errno(error))
+                .code = error,
+                .message = std::format("read {} bytes from 0x{:02X} on 0x{:02X} at {} failed: {}", length,
+                                       command, address_, device_, describe_errno(error))
             });
         }
 

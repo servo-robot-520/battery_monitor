@@ -46,8 +46,8 @@ namespace battery_monitor {
     private:
         void poll();
 
-        sensor_msgs::msg::BatteryState to_message(const BatteryReading& reading,
-                                                   const rclcpp::Time& stamp) const;
+        [[nodiscard]] sensor_msgs::msg::BatteryState to_message(const BatteryReading& reading,
+                                                                const rclcpp::Time& stamp) const;
 
         rclcpp::Node::SharedPtr node_;
         std::unique_ptr<Bms> bms_;
