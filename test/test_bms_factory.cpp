@@ -20,6 +20,7 @@ namespace battery_monitor {
             EXPECT_TRUE(reading->present);
             EXPECT_TRUE(reading->cell_voltage.size() == 2);
             EXPECT_TRUE(reading->cell_temperature.size() == 2);
+            EXPECT_EQ("FAKE-0001", reading->serial_number);
         }
 
         TEST(BmsFactoryTest, RejectsUnknownChip) {

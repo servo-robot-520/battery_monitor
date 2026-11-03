@@ -18,6 +18,7 @@ namespace battery_monitor {
         reading.temperature = 25.0;
         reading.cell_voltage = {3.90, 3.90};
         reading.cell_temperature = {24.5, 24.8};
+        reading.serial_number = "FAKE-0001";
         reading.status = PowerSupplyStatus::NOT_CHARGING;
         reading.health = PowerSupplyHealth::GOOD;
         reading.technology = PowerSupplyTechnology::LION;

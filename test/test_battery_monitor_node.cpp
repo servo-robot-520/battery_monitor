@@ -72,6 +72,7 @@ namespace battery_monitor {
             ASSERT_EQ(2U, received.cell_temperature.size());
             EXPECT_FLOAT_EQ(24.5F, received.cell_temperature[0]);
             EXPECT_EQ("fake_pack", received.location);
+            EXPECT_EQ("FAKE-0001", received.serial_number);
             EXPECT_FALSE(received.header.stamp.sec == 0 && received.header.stamp.nanosec == 0);
         }
 

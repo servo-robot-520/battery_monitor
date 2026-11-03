@@ -19,7 +19,7 @@ namespace battery_monitor {
     /// 是通用 SBS 地址，不能直接用于该芯片。
     ///
     /// 该芯片只提供整包温度，不提供单体温度，因此 BatteryReading 的
-    /// cell_temperature 保持为空。
+    /// cell_temperature 保持为空；序列号通过 MAC 0x004E 读取。
     class Bq28z610 final : public Bms {
     public:
         explicit Bq28z610(std::unique_ptr<I2cTransport> transport);
@@ -41,6 +41,7 @@ namespace battery_monitor {
         static constexpr uint8_t kCommandMacBlockStart = 0x3E;
         static constexpr std::size_t kMacBlockLength = 36;
         static constexpr uint16_t kMacDataStatus1 = 0x0071;
+        static constexpr uint16_t kMacSerialNumber = 0x004E;
 
         /// BatteryStatus() 位定义，见 TRM 14.1.6。
         static constexpr uint16_t kFlagFullyCharged = 1U << 5;
@@ -56,6 +57,9 @@ namespace battery_monitor {
 
         /// 从 DAStatus1 补齐单体电压；失败只影响单体电压，不影响整包数据。
         void fill_cell_voltages(BatteryReading& reading) const;
+
+        /// 从 MAC 0x004E 读取电池包序列号；失败只留空，不影响整包数据。
+        void fill_serial_number(BatteryReading& reading) const;
 
         std::unique_ptr<I2cTransport> transport_;
     };

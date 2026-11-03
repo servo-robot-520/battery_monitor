@@ -76,7 +76,7 @@ namespace battery_monitor {
         const auto publish_rate_hz =
             get_or_declare_parameter<double>(node_, "publish_rate_hz", 1.0);
         frame_id_ = get_or_declare_parameter<std::string>(node_, "frame_id", "");
-        location_ = get_or_declare_parameter<std::string>(node_, "location", "");
+        location_ = get_or_declare_parameter<std::string>(node_, "location", "battery");
 
         if (i2c_address < 0 || i2c_address > 0x7F) {
             throw std::runtime_error(

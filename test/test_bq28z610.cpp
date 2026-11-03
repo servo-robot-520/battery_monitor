@@ -32,6 +32,7 @@ namespace battery_monitor {
                 transport_->registers[0x3C] = 3000; // mAh
                 transport_->mac_payloads[0x0071] =
                     FakeI2cTransport::make_dastatus1_payload(3900, 3850);
+                transport_->mac_payloads[0x004E] = {0x34, 0x12}; // 0x1234
             }
 
             FakeI2cTransport* transport_{nullptr};
@@ -58,6 +59,7 @@ namespace battery_monitor {
             EXPECT_DOUBLE_EQ(3.9, reading->cell_voltage[0]);
             EXPECT_DOUBLE_EQ(3.85, reading->cell_voltage[1]);
             EXPECT_TRUE(reading->cell_temperature.empty());
+            EXPECT_EQ("0x1234", reading->serial_number);
         }
 
         TEST_F(Bq28z610Test, FullyChargedAndOvertemperatureFlagsWin) {
@@ -99,6 +101,7 @@ namespace battery_monitor {
 
             ASSERT_TRUE(reading.has_value()) << reading.error().message;
             EXPECT_TRUE(reading->cell_voltage.empty());
+            EXPECT_TRUE(reading->serial_number.empty());
             EXPECT_DOUBLE_EQ(7.8, reading->voltage);
         }
 

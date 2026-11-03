@@ -111,6 +111,7 @@ namespace battery_monitor {
         }
 
         fill_cell_voltages(reading);
+        fill_serial_number(reading);
         // BQ28Z610 不提供单体温度，cell_temperature 保持为空；节点按原样映射。
         return reading;
     }
@@ -214,6 +215,26 @@ namespace battery_monitor {
                 reading.cell_voltage.push_back(static_cast<double>(millivolts) / 1000.0);
             }
         }
+    }
+
+    void Bq28z610::fill_serial_number(BatteryReading& reading) const {
+        const auto response = read_mac(kMacSerialNumber);
+        if (!response) {
+            // 序列号是附加信息；读取失败不影响电压/电流/SOC 的发布。
+            LOG_DEBUG("{}", response.error().message);
+            return;
+        }
+
+        const auto& data = response.value();
+        if (data.size() < 2) {
+            LOG_DEBUG("BQ28Z610: serial number payload has {} bytes, expected at least 2",
+                      data.size());
+            return;
+        }
+
+        const auto serial = static_cast<uint16_t>(data[0]) |
+            static_cast<uint16_t>(data[1] << 8);
+        reading.serial_number = std::format("0x{:04X}", serial);
     }
 
 } // namespace battery_monitor
