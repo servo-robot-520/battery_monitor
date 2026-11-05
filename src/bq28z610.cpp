@@ -18,7 +18,8 @@ namespace battery_monitor {
 
     } // namespace
 
-    Bq28z610::Bq28z610(std::unique_ptr<I2cTransport> transport) : transport_(std::move(transport)) {
+    Bq28z610::Bq28z610(std::unique_ptr<I2cTransport> transport) :
+        transport_(std::move(transport)) {
         if (!transport_) {
             throw std::invalid_argument("Bq28z610 requires an I2C transport");
         }
@@ -117,7 +118,7 @@ namespace battery_monitor {
     }
 
     std::expected<uint16_t, BmsError> Bq28z610::read_required_word(const uint8_t command,
-                                                                  const std::string_view field) const {
+                                                                   const std::string_view field) const {
         const auto value = transport_->read_word(command);
         if (!value) {
             return std::unexpected(BmsError{

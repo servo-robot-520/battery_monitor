@@ -1,7 +1,6 @@
 #include "battery_monitor/battery_monitor_node.hpp"
 
 #include <cmath>
-#include <cstdint>
 #include <format>
 #include <stdexcept>
 #include <utility>
